@@ -103,7 +103,19 @@ boot_alloc(uint32_t n)
 	//
 	// LAB 2: Your code here.
 
-	return NULL;
+	if (n > 0)
+	{
+		nextfree = ROUNDUP(nextfree+n, PGSIZE);
+		if(nextfree > (char *)(npages*PGSIZE + KERNBASE)){
+			panic("out of memory");
+		}
+
+		return nextfree;
+	}
+	else if(n == 0)
+	{
+		return nextfree;
+	}
 }
 
 // Set up a two-level page table:
@@ -148,6 +160,11 @@ mem_init(void)
 	// array.  'npages' is the number of physical pages in memory.  Use memset
 	// to initialize all fields of each struct PageInfo to 0.
 	// Your code goes here:
+
+	// 'npages' is the number of physical pages in memory.
+	pages = (struct PageInfo*)boot_alloc(sizeof(struct PageInfo)*npages);
+	memset(pages, 0, sizeof(struct PageInfo)*npages);
+
 
 
 	//////////////////////////////////////////////////////////////////////
