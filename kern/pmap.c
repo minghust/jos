@@ -318,10 +318,9 @@ page_alloc(int alloc_flags)
 	if(page_free_list)
 	{
 		struct PageInfo* p = page_free_list;
-		p->pp_link = NULL;
-
 		page_free_list = page_free_list->pp_link;
 		
+		p->pp_link = NULL;
 		if(alloc_flags && ALLOC_ZERO)
 		{
 			char * ad = page2kva(p);
