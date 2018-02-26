@@ -389,7 +389,37 @@ pte_t *
 pgdir_walk(pde_t *pgdir, const void *va, int create)
 {
 	// Fill this function in
-	return NULL;
+	// get page dir index and page table index(MACRO in inc/mmu.h)
+	uint32_t pdindex = PDX(va);
+	uint32_t ptindex = PTX(va);
+	
+	pde_t pdentry = pgdir[pdindex];
+	pte_t *ptentry;
+	struct PageInfo *p;
+	if(pdentry & PTE_P) // page table exsit
+	{
+		// PTE_ADDR: Address in page table or page directory entry
+		// KADDR: takes a physical address and returns the corresponding kernel virtual address
+		ptentry = (pte_t *)(KADDR(PTE_ADDR(pdentry)));
+	}
+	else if(!create)
+	{
+		return NULL;
+	}
+	else if(!(p=page_alloc(ALLOC_ZERO))) // alloc a page for page table
+	{
+		return NULL;
+	}
+	else
+	{
+		ptentry = (pte_t *)page2kva(p);
+		p->pp_ref++;
+		// insert this page into page dir
+		pgdir[pdindex] = page2pa(p) | PTE_W | PTE_U | PTE_P;
+	}
+
+	return &ptentry[ptindex];
+
 }
 
 //
