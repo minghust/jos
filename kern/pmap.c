@@ -185,6 +185,12 @@ mem_init(void)
 	//    - pages itself -- kernel RW, user NONE
 	// Your code goes here:
 
+// PTE_P: 该页是否存在。由操作系统或者应用程序来设置
+
+// PTE_W: 0代表只读，1代表可读写。
+
+// PTE_U: 0需要supervisor权限，1只需user权限
+	
 	// boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm)
 
 	size_t size_1 = ROUNDUP(sizeof(struct PageInfo)*npages, PGSIZE);
