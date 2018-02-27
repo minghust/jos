@@ -524,7 +524,7 @@ struct PageInfo *
 page_lookup(pde_t *pgdir, void *va, pte_t **pte_store)
 {
 	// Fill this function in
-	pte_t *ptentry = pgdir_walk(pgdir, va, 0) // don't create page
+	pte_t *ptentry = pgdir_walk(pgdir, va, 0); // don't create page
 	if(!ptentry)
 	{
 		return NULL; // no page mapped at va
