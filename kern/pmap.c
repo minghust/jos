@@ -396,6 +396,7 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
 	pde_t pdentry = pgdir[pdindex];
 	pte_t *ptentry;
 	struct PageInfo *p;
+
 	if(pdentry & PTE_P) // page table exsit
 	{
 		// PTE_ADDR: Address in page table or page directory entry
@@ -412,7 +413,7 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
 	}
 	else
 	{
-		ptentry = (pte_t *)page2kva(p);
+		ptentry = (pte_t *)page2kva(p); // get page table entry virtual addr
 		p->pp_ref++;
 		// insert this page into page dir
 		pgdir[pdindex] = page2pa(p) | PTE_W | PTE_U | PTE_P;
@@ -437,6 +438,24 @@ static void
 boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm)
 {
 	// Fill this function in
+
+	uint32_t i;
+	pte_t *ptentry;
+
+	for (i = 0; i < size / PGSIZE; i++)
+	{
+		if(!(ptentry = pgdir_walk(pgdir, (void *)va, 1))) // get page table entry ptr
+		{
+			return;
+		}
+		else
+		{
+			*ptentry = (pa+i*PGSIZE) | perm | PTE_P; // map to physical
+			va += PGSIZE;
+		}
+	}
+
+	return;
 }
 
 //
@@ -468,6 +487,25 @@ int
 page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 {
 	// Fill this function in
+	pte_t *ptentry = pgdir_walk(pgdir, va, 1);
+	if(!ptentry)
+	{
+		return -E_NO_MEM; // couldn't be allocated
+	}
+
+	if(PTE_ADDR(*ptentry) == page2pa(pp)) // reinsert
+	{
+		*ptentry = page2pa(pp) | perm | PTE_P;
+		return 0;
+	}
+	else if(*ptentry & PTE_P)// already mapped page has to be removed
+	{
+		page_remove(pgdir, va);
+	}
+
+	pp->pp_ref++;
+	*ptentry = page2pa(pp) | perm | PTE_P;
+
 	return 0;
 }
 
@@ -486,7 +524,19 @@ struct PageInfo *
 page_lookup(pde_t *pgdir, void *va, pte_t **pte_store)
 {
 	// Fill this function in
-	return NULL;
+	pte_t *ptentry = pgdir_walk(pgdir, va, 0) // don't create page
+	if(!ptentry)
+	{
+		return NULL; // no page mapped at va
+	}
+
+	if(pte_store)
+	{
+		*pte_store = ptentry; // store pte in it
+	}
+
+	physaddr_t pp = PTE_ADDR(*ptentry); // physical addr
+	return pa2page(pp);
 }
 
 //
@@ -508,6 +558,18 @@ void
 page_remove(pde_t *pgdir, void *va)
 {
 	// Fill this function in
+	pte_t *ptentry;
+	struct PageInfo *p = page_lookup(pgdir, va, &ptentry);
+	if(!p)
+	{
+		return; // there is no physical page at that address
+	}
+
+	page_decref(p);
+	*ptentry = 0; // set to 0
+	tlb_invalidate(pgdir, va);
+
+	return;
 }
 
 //
