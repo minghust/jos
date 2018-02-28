@@ -190,7 +190,7 @@ mem_init(void)
 // PTE_W: 0代表只读，1代表可读写。
 
 // PTE_U: 0需要supervisor权限，1只需user权限
-	
+
 	// boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm)
 
 	size_t size_1 = ROUNDUP(sizeof(struct PageInfo)*npages, PGSIZE);
@@ -366,7 +366,7 @@ page_free(struct PageInfo *pp)
 
 	if(pp->pp_ref != 0 || pp->pp_link != NULL)
 	{
-		panic("Error, page is in use or the page is in already free list");
+		panic("Error, page is in use or the page is in free list");
 	}
 	pp->pp_link = page_free_list;
 	page_free_list = pp;
