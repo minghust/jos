@@ -80,12 +80,14 @@ TRAPHANDLER_NOEC(system_call_handler, T_SYSCALL)
  * 4. call trap (can trap ever return?)
  */
 
+_alltraps:
 pushl %ds
 pushl %es
 pushal
 
-movl $GD_KD, %ds
-movl $GD_KD, %es
+movl $GD_KD, %eax
+movl %eax, %ds
+movl %eax, %es
 
 pushl %ebp
 call trap
