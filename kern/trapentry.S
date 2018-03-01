@@ -46,10 +46,46 @@
 /*
  * Lab 3: Your code here for generating entry points for the different traps.
  */
+TRAPHANDLER_NOEC(divide_zero_handler, T_DIVIDE)
+TRAPHANDLER_NOEC(debug_handler, T_DEBUG)
+TRAPHANDLER_NOEC(non_maskable_interrupt_handler, T_NMI)
+TRAPHANDLER_NOEC(breakpoint_handler, T_BRKPT)
+TRAPHANDLER_NOEC(over_flow_handler, T_OFLOW)
+TRAPHANDLER_NOEC(bound_range_exceeded_handler, T_BOUND)
+TRAPHANDLER_NOEC(invalid_opcode_handler, T_ILLOP)
+TRAPHANDLER_NOEC(device_not_available_handler, T_DEVICE)
+TRAPHANDLER(double_fault_handler, T_DBLFLT)
+TRAPHANDLER_NOEC(coprocessor_segment_overrun_handler, T_COPROC)
+TRAPHANDLER(invalid_tss_handler, T_TSS)
+TRAPHANDLER(segment_not_present_handler, T_SEGNP)
+TRAPHANDLER(stack_fault_handler, T_STACK)
+TRAPHANDLER(general_protection_handler, T_GPFLT)
+TRAPHANDLER(Page_Fault_handler, T_PGFLT)
+TRAPHANDLER_NOEC(unknown_trap_handler, T_RES)
+TRAPHANDLER_NOEC(floating_point_error_handler, T_FPERR)
+TRAPHANDLER(alignment_check_handler, T_ALIGN)
+TRAPHANDLER_NOEC(machine_check_handler, T_MCHK)
+TRAPHANDLER_NOEC(simd_floating_point_exception_handler, T_SIMDERR)
 
+TRAPHANDLER_NOEC(system_call_handler, T_SYSCALL)
 
 
 /*
  * Lab 3: Your code here for _alltraps
  */
+/*
+ * 1. push values to make the stack look like a struct Trapframe
+ * 2. load GD_KD into %ds and %es
+ * 3. pushl %esp to pass a pointer to the Trapframe as an argument to trap()
+ * 4. call trap (can trap ever return?)
+ */
 
+pushl %ds
+pushl %es
+pushal
+
+movl $GD_KD, %ds
+movl $GD_KD, %es
+
+pushl %ebp
+call trap
