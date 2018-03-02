@@ -116,7 +116,7 @@ env_init(void)
 {
 	// Set up envs array
 	// LAB 3: Your code here.
-	uint32_t i;
+	int32_t i;
 	for(i=NENV-1; i>=0; i--) // in order
 	{
 		envs[i].env_id = 0;
@@ -190,10 +190,10 @@ env_setup_vm(struct Env *e)
 
 	// initialize user env's pgdir table, the same as kern_pgdir
 	p->pp_ref++; // increament env_pgdir's pp_ref
+	e->env_pgdir = page2kva(p);
 	
 	// set e->env_pgdir from kern_pgdir
 	memcpy(e->env_pgdir, kern_pgdir, PGSIZE);
-	e->env_pgdir = (pde_t *)page2kva(p);
 
 	// UVPT maps the env's own page table read-only.
 	// Permissions: kernel R, user R
@@ -298,7 +298,7 @@ region_alloc(struct Env *e, void *va, size_t len)
 	uint32_t pem = PTE_P | PTE_U | PTE_W;
 	
 	// alloc pages and insert into pgdir
-	for(i=0; i<len; i+=PGSIZE)  
+	for(i=0; i<len; i+=PGSIZE)
 	{
 		p = page_alloc(0);
 		if(!p)
@@ -402,6 +402,8 @@ load_icode(struct Env *e, uint8_t *binary)
 	// at virtual address USTACKTOP - PGSIZE.
 
 	// LAB 3: Your code here.
+	e->env_tf.tf_eip = f->e_entry;
+	
 	region_alloc(e, (void *)(USTACKTOP-PGSIZE), PGSIZE); // as page alloc and insert
 }
 

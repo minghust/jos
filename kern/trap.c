@@ -96,14 +96,15 @@ trap_init(void)
 	SETGATE(idt[T_ILLOP], 0, GD_KT, invalid_opcode_handler, 0);
 	SETGATE(idt[T_DEVICE], 0, GD_KT, device_not_available_handler, 0);
 	SETGATE(idt[T_DBLFLT], 0, GD_KT, double_fault_handler, 0);
-	//SETGATE(idt[T_COPROC], 0, GD_KT, coprocessor_segment_overrun_handler, 0);
-	
+	// reserved
+	SETGATE(idt[T_COPROC], 0, GD_KT, coprocessor_segment_overrun_handler, 0);
 	SETGATE(idt[T_TSS], 0, GD_KT, invalid_tss_handler, 0);
 	SETGATE(idt[T_SEGNP], 0, GD_KT, segment_not_present_handler, 0);
 	SETGATE(idt[T_STACK], 0, GD_KT, stack_fault_handler, 0);
 	SETGATE(idt[T_GPFLT], 0, GD_KT, general_protection_handler, 0);
 	SETGATE(idt[T_PGFLT], 0, GD_KT, Page_Fault_handler, 0);
-	//SETGATE(idt[T_RES], 0, GD_KT, unknown_trap_handler, 0);
+	// reserved	
+	SETGATE(idt[T_RES], 0, GD_KT, unknown_trap_handler, 0);
 	SETGATE(idt[T_FPERR], 0, GD_KT, floating_point_error_handler, 0);
 	SETGATE(idt[T_ALIGN], 0, GD_KT, alignment_check_handler, 0);
 	SETGATE(idt[T_MCHK], 0, GD_KT, machine_check_handler, 0);
