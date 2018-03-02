@@ -117,7 +117,7 @@ env_init(void)
 	// Set up envs array
 	// LAB 3: Your code here.
 	uint32_t i;
-	for(i=NENV-1; i>=0; i++) // in order
+	for(i=NENV-1; i>=0; i--) // in order
 	{
 		envs[i].env_id = 0;
 		envs[i].env_status = ENV_FREE;
@@ -305,7 +305,7 @@ region_alloc(struct Env *e, void *va, size_t len)
 		{
 			panic("out of memory, page alloc error!");
 		}
-		if(!page_insert(e->env_pgdir, p, va+i, pem))
+		if(page_insert(e->env_pgdir, p, va+i, pem) != 0)
 		{
 			panic("insert page into pgdir error!");
 		}

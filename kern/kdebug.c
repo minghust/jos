@@ -158,6 +158,7 @@ debuginfo_eip(uintptr_t addr, struct Eipdebuginfo *info)
 		
 		if(user_mem_check(curenv, stabstr, stabstr_end-stabstr, PTE_U)<0)
 			return -1;
+	}
 
 	// String table validity checks
 	if (stabstr_end <= stabstr || stabstr_end[-1] != 0)

@@ -85,9 +85,9 @@ pushl %ds
 pushl %es
 pushal
 
-movl $GD_KD, %eax
-movl %eax, %ds
-movl %eax, %es
+movw $GD_KD, %ax
+movw %ax, %ds
+movw %ax, %es
 
-pushl %ebp
+pushl %esp
 call trap
