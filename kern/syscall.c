@@ -271,7 +271,7 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 	// Call the function corresponding to the 'syscallno' parameter.
 	// Return any appropriate return value.
 	// LAB 3: Your code here.
-
+	
 	switch (syscallno) {
 	case SYS_cputs:
 		sys_cputs((const char *)a1, (size_t)a2);
@@ -285,6 +285,33 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 		break;
 	case SYS_env_destroy:
 		return sys_env_destroy((envid_t)a1);
+		break;
+	case SYS_page_alloc:
+		return sys_page_alloc();
+		break;
+	case SYS_page_map:
+		return sys_page_map();
+		break;
+	case SYS_page_unmap:
+		return sys_page_unmap();
+		break;
+	case SYS_exofork:
+		return sys_exofork();
+		break;
+	case SYS_env_set_status:
+		return sys_env_set_status();
+		break;
+	case SYS_env_set_pgfault_upcall:
+		return sys_env_set_pgfault_upcall();
+		break;
+	case SYS_yield:
+		return sys_yield();
+		break;
+	case SYS_ipc_try_send:
+		return sys_ipc_try_send();
+		break;
+	case SYS_ipc_recv;
+		return sys_ipc_recv();
 		break;
 	default:
 		return -E_INVAL;

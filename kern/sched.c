@@ -29,7 +29,30 @@ sched_yield(void)
 	// below to halt the cpu.
 
 	// LAB 4: Your code here.
+	idle = thiscpu->cpu_env;
 
+	int32_t env_start, i;
+	if(idle)
+		env_start = ENVX(idle->env_id);
+	else
+		env_start = 0;
+
+	i = env_start;
+	do{
+		if(envs[i].env_status == ENV_RUNNABLE)
+		{
+			env_run(&envs[i]);
+			return;
+		}
+		i = (i+1)%NENV;
+
+	}while(i != env_start);
+
+	if(idle && idle->env_status == ENV_RUNNING)
+	{
+		env_run(idle);
+		return;
+	}
 	// sched_halt never returns
 	sched_halt();
 }
