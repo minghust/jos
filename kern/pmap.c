@@ -738,12 +738,8 @@ user_mem_check(struct Env *env, const void *va, size_t len, int perm)
 	{
 		// get a page
 		pte_t *pte = pgdir_walk(env->env_pgdir, (void *)start, 0);
-		if(!pte)
-		{
-			return -E_FAULT;
-		}
 		// check permission
-		if((*pte & per) != per)
+		if(!pte || (*pte & per) != per)
 		{
 			if(start < (uintptr_t)va)
 				user_mem_check_addr = (uintptr_t)va;
