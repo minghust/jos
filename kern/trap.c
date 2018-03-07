@@ -88,6 +88,24 @@ void simd_floating_point_exception_handler();
 
 void system_call_handler();
 
+// irqs handlers
+void irq0_handler();
+void irq1_handler();
+void irq2_handler();
+void irq3_handler();
+void irq4_handler();
+void irq5_handler();
+void irq6_handler();
+void irq7_handler();
+void irq8_handler();
+void irq9_handler();
+void irq10_handler();
+void irq11_handler();
+void irq12_handler();
+void irq13_handler();
+void irq14_handler();
+void irq15_handler();
+
 void
 trap_init(void)
 {
@@ -119,7 +137,23 @@ trap_init(void)
 
 	SETGATE(idt[T_SYSCALL], 0, GD_KT, system_call_handler, 3);
 
-
+	// set IRQs
+	SETGATE(idt[IRQ_OFFSET+0], 0, GD_KT, irq0_handler, 0);
+	SETGATE(idt[IRQ_OFFSET+1], 0, GD_KT, irq1_handler, 0);
+	SETGATE(idt[IRQ_OFFSET+2], 0, GD_KT, irq2_handler, 0);
+	SETGATE(idt[IRQ_OFFSET+3], 0, GD_KT, irq3_handler, 0);
+	SETGATE(idt[IRQ_OFFSET+4], 0, GD_KT, irq4_handler, 0);
+	SETGATE(idt[IRQ_OFFSET+5], 0, GD_KT, irq5_handler, 0);
+	SETGATE(idt[IRQ_OFFSET+6], 0, GD_KT, irq6_handler, 0);
+	SETGATE(idt[IRQ_OFFSET+7], 0, GD_KT, irq7_handler, 0);
+	SETGATE(idt[IRQ_OFFSET+8], 0, GD_KT, irq8_handler, 0);
+	SETGATE(idt[IRQ_OFFSET+9], 0, GD_KT, irq9_handler, 0);
+	SETGATE(idt[IRQ_OFFSET+10], 0, GD_KT, irq10_handler, 0);
+	SETGATE(idt[IRQ_OFFSET+11], 0, GD_KT, irq11_handler, 0);
+	SETGATE(idt[IRQ_OFFSET+12], 0, GD_KT, irq12_handler, 0);
+	SETGATE(idt[IRQ_OFFSET+13], 0, GD_KT, irq13_handler, 0);
+	SETGATE(idt[IRQ_OFFSET+14], 0, GD_KT, irq14_handler, 0);
+	SETGATE(idt[IRQ_OFFSET+15], 0, GD_KT, irq15_handler, 0);
 	// Per-CPU setup
 	trap_init_percpu();
 }
@@ -258,6 +292,11 @@ trap_dispatch(struct Trapframe *tf)
 	// Handle clock interrupts. Don't forget to acknowledge the
 	// interrupt using lapic_eoi() before calling the scheduler!
 	// LAB 4: Your code here.
+	if(tf->tf_trapno == IRQ_OFFSET + IRQ_TIMER) // clock interrupts
+	{
+		lapic_eoi();
+		sched_yield();
+	}
 
 	// Unexpected trap: The user process or the kernel has a bug.
 	print_trapframe(tf);
