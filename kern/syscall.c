@@ -334,7 +334,11 @@ sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
 	pte_t * pte;
 	struct PageInfo *p;
 
-	re = envid2env(envid, &env, 1);
+	// !!!! 
+	// set the checkperm flag to 0, 
+	// meaning that any environment is allowed 
+	// to send IPC messages to any other environment
+	re = envid2env(envid, &env, 0);
 	if(re < 0)
 		return -E_BAD_ENV;
 	else if(env->env_ipc_recving == 0)
@@ -345,22 +349,32 @@ sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
 	env->env_ipc_value = value;
 	env->env_ipc_perm = 0;
 
-	if((uint32_t)srcva < UTOP && (uint32_t)srcva % PGSIZE)
-		return -E_INVAL;
-	else if((uint32_t)srcva < UTOP && ((perm&(PTE_U | PTE_P)) != (PTE_U | PTE_P)))
-		return -E_INVAL;
-	p = page_lookup(curenv->env_pgdir, srcva, &pte);
-	if((uint32_t)srcva < UTOP && !p)
-		return -E_INVAL;
-	else if((perm & PTE_W) && !(*pte & PTE_W))
-		return -E_INVAL;
+	if((uint32_t)srcva < UTOP)
+	{
+		env->env_ipc_perm = perm;
+
+		if((uint32_t)srcva % PGSIZE)
+			return -E_INVAL;
+		else if((perm & (PTE_U | PTE_P)) != (PTE_U | PTE_P))
+			return -E_INVAL;
+
+		p = page_lookup(curenv->env_pgdir, srcva, &pte);
+		if(!p)
+			return -E_INVAL;
+		else if(!(*pte & PTE_W) && (perm & PTE_W))
+			return -E_INVAL;
+
+		re = page_insert(env->env_pgdir, p, env->env_ipc_dstva, perm);
+		if(re < 0)
+			return -E_NO_MEM;
+
+		re = page_insert(env->env_pgdir, p, env->env_ipc_dstva, perm);
+		if(re < 0)
+			return -E_NO_MEM;
+	}
 	
-	re = page_insert(env->env_pgdir, p, env->env_ipc_dstva, perm);
-	if(re < 0)
-		return -E_NO_MEM;
-
-	env->env_ipc_perm = perm;
-
+	env->env_tf.tf_regs.reg_eax = 0;
+	env->env_status = ENV_RUNNABLE;
 	return 0;
 
 }
@@ -384,10 +398,15 @@ sys_ipc_recv(void *dstva)
 	curenv->env_ipc_recving = true;
 	curenv->env_status = ENV_NOT_RUNNABLE;
 	curenv->env_ipc_dstva = (void *)UTOP;
-	if((uint32_t)dstva < UTOP && (uint32_t)dstva % PGSIZE)
-		return -E_INVAL;
 
-	curenv->env_ipc_dstva = dstva; 
+	if((uint32_t)dstva < UTOP)
+	{
+		if((uint32_t)dstva % PGSIZE)
+			return -E_INVAL;
+
+		curenv->env_ipc_dstva = dstva;
+	}
+
 	sys_yield();
 	return 0;
 }
